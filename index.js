@@ -10,7 +10,10 @@ const readline = require('readline');
 const ffmpeg = require('fluent-ffmpeg');
 
 var dir = './tmp';
-
+var mkdirp = require('mkdirp');
+mkdirp(dir, function (err) {
+  console.log(err);
+});
 function getInfo(url) {
   return new Promise(function (resolve, reject) {
     ytdl.getInfo(url, function (err, info) {
