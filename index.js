@@ -8,12 +8,16 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const readline = require('readline');
 const ffmpeg = require('fluent-ffmpeg');
+const ffmpegOnProgress = require('ffmpeg-on-progress')
 
 var dir = './tmp';
 var mkdirp = require('mkdirp');
 mkdirp(dir, function (err) {
-  console.log(err);
+  if (err) {
+    console.log(err);
+  }
 });
+
 function getInfo(url) {
   return new Promise(function (resolve, reject) {
     ytdl.getInfo(url, function (err, info) {
@@ -97,19 +101,47 @@ app.get('/mp3', function (request, response) {
     quality: 'highestaudio',
     //filter: 'audioonly',
   });
+  let file_mp3 = `${dir}/${id}.mp3`;
 
   let start = Date.now();
   ffmpeg(stream)
     .audioBitrate(128)
-    .save(`${dir}/${id}.mp3`)
+    .save(file_mp3)
     .on('progress', (p) => {
       readline.cursorTo(process.stdout, 0);
-      process.stdout.write(`${p.targetSize}kb downloaded`);
+      process.stdout.write(`${p.targetSize} kb downloaded`);
     })
     .on('end', () => {
-      console.log(`\ndone, thanks - ${(Date.now() - start) / 1000}s`);
+      response.status(200).json({
+        success: true,
+        file: file_mp3,
+        time: `${(Date.now() - start) / 1000}s`
+      });
     });
 });
+
+app.get('/download', function (request, response) {
+  var file = request.query.file;
+  if (!file) {
+    response.status(400)
+      .json({
+        success: false,
+        message: 'URL must be specified'
+      });
+    return;
+  }
+  if (fs.existsSync(path)) {
+    response.download(file, function(err) {
+      if (err){
+        console.log(err);
+      }
+      fs.unlink(file);
+    });
+  } else {
+    response.status(200).json({error: `${file} doesnt exists`});
+  }
+});
+
 app.listen(app.get('port'), function () {
   console.log('Node app is running on port', app.get('port'));
 });
