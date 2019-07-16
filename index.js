@@ -106,18 +106,21 @@ app.get('/mp3', function (request, response) {
   let start = Date.now();
   ffmpeg(stream)
     .audioBitrate(128)
-    .save(file_mp3)
     .on('progress', (p) => {
       readline.cursorTo(process.stdout, 0);
       process.stdout.write(`${p.targetSize} kb downloaded`);
     })
+    .on('error', function (err) {
+      response.status(200).json({ error: err.message });
+    })
     .on('end', () => {
       response.status(200).json({
         success: true,
-        file: file_mp3,
+        file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
         time: `${(Date.now() - start) / 1000}s`
       });
-    });
+    })
+    .save(file_mp3);
 });
 
 app.get('/download', function (request, response) {
@@ -131,14 +134,14 @@ app.get('/download', function (request, response) {
     return;
   }
   if (fs.existsSync(path)) {
-    response.download(file, function(err) {
-      if (err){
+    response.download(file, function (err) {
+      if (err) {
         console.log(err);
       }
       fs.unlink(file);
     });
   } else {
-    response.status(200).json({error: `${file} doesnt exists`});
+    response.status(200).json({ error: `${file} doesnt exists` });
   }
 });
 
