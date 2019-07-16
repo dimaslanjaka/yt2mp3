@@ -133,7 +133,7 @@ app.get('/download', function (request, response) {
       });
     return;
   }
-  if (fs.existsSync(path)) {
+  if (fs.existsSync(file)) {
     response.download(file, function (err) {
       if (err) {
         console.log(err);
@@ -142,6 +142,18 @@ app.get('/download', function (request, response) {
     });
   } else {
     response.status(200).json({ error: `${file} doesnt exists` });
+  }
+});
+
+app.get('/delete', function (request, response) {
+  var file = request.query.file;
+  if (!file) {
+    response.status(400)
+      .json({
+        success: false,
+        message: 'URL must be specified'
+      });
+    return;
   }
 });
 
