@@ -9,22 +9,24 @@ const bodyParser = require("body-parser");
 const readline = require('readline');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegOnProgress = require('ffmpeg-on-progress')
-
-var dir = './tmp';
-var mkdirp = require('mkdirp');
-mkdirp(dir, function (err) {
+const nDate = new Date().toLocaleString('en-US', {
+  timeZone: 'Asia/Jakarta'
+});
+const dir = './tmp';
+const mkdirp = require('mkdirp');
+mkdirp(dir, function(err) {
   if (err) {
     console.log(err);
   }
 });
 
 function getInfo(url) {
-  return new Promise(function (resolve, reject) {
-    ytdl.getInfo(url, function (err, info) {
+  return new Promise(function(resolve, reject) {
+    ytdl.getInfo(url, function(err, info) {
       if (err) {
         reject(err);
       } else {
-        resolve(info.formats.map(function (format) {
+        resolve(info.formats.map(function(format) {
           return {
             url: format.url,
             quality: format.quality,
@@ -52,11 +54,37 @@ function YouTubeGetID(url) {
   if (url[2] !== undefined) {
     ID = url[2].split(/[^0-9a-z_\-]/i);
     ID = ID[0];
-  }
-  else {
+  } else {
     ID = url;
   }
   return ID;
+}
+
+function pdleft(val) {
+  if (val >= 10)
+    return val;
+  else
+    return '0' + val;
+}
+
+function currdate(set = false) {
+  //var d = new Date,
+  var d = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Jakarta'
+    }),
+    dformat = [(pdleft(d.getDate() + 1)),
+      pdleft(d.getMonth()),
+      d.getFullYear()
+    ].reverse().join('/') + ' ' + [pdleft(d.getHours()),
+      pdleft(d.getMinutes()),
+      pdleft(d.getSeconds())
+    ].join(':');
+  console.log(dformat);
+  if (!set) {
+    return dformat;
+  } else if (set == 'timestamp') {
+    return d.getTime();
+  }
 }
 
 var app = express();
@@ -66,7 +94,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 5000));
-app.get('/api', function (request, response) {
+app.get('/api', function(request, response) {
   var url = request.query.url;
   if (!url) {
     response.status(400)
@@ -77,15 +105,15 @@ app.get('/api', function (request, response) {
     return;
   }
   getInfo(url)
-    .then(function (val) {
+    .then(function(val) {
       return response.status(200).json(val);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       return response.status(500).send(err);
     });
 });
 
-app.get('/mp3', function (request, response) {
+app.get('/mp3', function(request, response) {
   var url = request.query.url;
   if (!url) {
     response.status(400)
@@ -110,10 +138,33 @@ app.get('/mp3', function (request, response) {
       readline.cursorTo(process.stdout, 0);
       process.stdout.write(`${p.targetSize} kb downloaded`);
     })
-    .on('error', function (err) {
-      response.status(200).json({ error: err.message });
+    .on('error', function(err) {
+      response.status(200).json({
+        error: err.message
+      });
     })
     .on('end', () => {
+      var obj = {
+        file: file_mp3,
+        date: currdate(),
+        timestamp: currdate('timestamp')
+      };
+      if (fs.existsSync('tmp/saved.log')) {
+        fs.readFile('tmp/saved.log', 'utf8', function(err, data) {
+          if (err) {
+            throw err;
+          };
+          obj.push(JSON.parse(data));
+        });
+      }
+      fs.writeFile('tmp/saved.log', JSON.stringify(obj), {
+        overwrite: false
+      }, function(err) {
+        if (err) {
+          throw err;
+        };
+        //console.log('It\'s saved!');
+      });
       response.status(200).json({
         success: true,
         file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
@@ -123,7 +174,7 @@ app.get('/mp3', function (request, response) {
     .save(file_mp3);
 });
 
-app.get('/download', function (request, response) {
+app.get('/download', function(request, response) {
   var file = request.query.file;
   if (!file) {
     response.status(400)
@@ -134,18 +185,20 @@ app.get('/download', function (request, response) {
     return;
   }
   if (fs.existsSync(file)) {
-    response.download(file, function (err) {
+    response.download(file, function(err) {
       if (err) {
         console.log(err);
       }
       fs.unlink(file);
     });
   } else {
-    response.status(200).json({ error: `${file} doesnt exists` });
+    response.status(200).json({
+      error: `${file} doesnt exists`
+    });
   }
 });
 
-app.get('/delete', function (request, response) {
+app.get('/delete', function(request, response) {
   var file = request.query.file;
   if (!file) {
     response.status(400)
@@ -155,9 +208,12 @@ app.get('/delete', function (request, response) {
       });
     return;
   }
+  if (fs.existsSync(file)) {
+    fs.unlink(file);
+  }
 });
 
-app.listen(app.get('port'), function () {
+app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
 //# sourceMappingURL=index.js.map
