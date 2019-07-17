@@ -311,10 +311,11 @@ app.get('/rewrite', function (request, response) {
       response.status(200).json({ file: file, error: (err ? true : false) });
     });
   }
+  return;
 });
 
 app.get('/get_log', function (request, response) {
-  if (fs.existsSync('tmp/saved.log')) {
+  fs.exists('tmp/saved.log', function(e){
     fs.readFile('tmp/saved.log', 'utf8', function (err, data) {
       if (err) {
         throw err;
@@ -323,22 +324,22 @@ app.get('/get_log', function (request, response) {
       let ONE_HOUR = 60 * 60 * 1000; /* ms */
       for (var key in jdata) {
         if (((new Date) - jdata[key].timestamp) > ONE_HOUR) {
-          if (fs.existsSync(key)) {
-            fs.unlinkSync(key);
-          }
+          fs.unlink(key, function(e){
+            console.log(e !== true);
+          });
           jdata = delokey(jdata, key);
         }
       }
       fs.writeFile('tmp/saved.log', JSON.stringify(jdata, null, 4), {
         overwrite: false
       }, function (err) {
-        response.status(200).json({ error: (err ? true : false) });
+        //response.status(200).json({ error: (err ? true : false) });
       });
-      response.status(200)
-      response.setHeader('Content-Type', 'application/json')
-      response.end(JSON.stringify(jdata, null, 2));
+      response.status(200).json(jdata);
     });
-  }
+    return;
+  });
+  return;
 });
 
 app.listen(app.get('port'), function () {
