@@ -68,10 +68,7 @@ function pdleft(val) {
 }
 
 function currdate(set = false) {
-  //var d = new Date,
-  var d = new Date().toLocaleString('en-US', {
-      timeZone: 'Asia/Jakarta'
-    }),
+  var d = new Date(),
     dformat = [(pdleft(d.getDate() + 1)),
       pdleft(d.getMonth()),
       d.getFullYear()
@@ -84,7 +81,47 @@ function currdate(set = false) {
     return dformat;
   } else if (set == 'timestamp') {
     return d.getTime();
+  } else if (set == 'locale') {
+    return new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Jakarta'
+    });
   }
+}
+
+function filter_request(req, res) {
+  var ref = req.headers.referer;
+  var host = req.headers.host;
+  if (host != 'localhost:5000') {
+    if (!ref || !req.match(/localhost|akarmas\.com/gm)) {
+      res.status(400)
+        .json({
+          success: false,
+          message: 'Invalid Headers [R]'
+        });
+      return;
+    }
+  }
+}
+
+function logging(file_mp3) {
+  fs.readFile('tmp/saved.log', 'utf8', function(err, data) {
+    if (err) {
+      //throw err;
+    };
+    let obj = (err ? {} : JSON.parse(data));
+    obj[file_mp3] = {
+      date: currdate('locale'),
+      timestamp: currdate('timestamp')
+    }
+    fs.writeFile('tmp/saved.log', JSON.stringify(obj, null, 2), {
+      overwrite: true
+    }, function(err) {
+      if (err) {
+        //throw err;
+      };
+      //console.log('It\'s saved!');
+    });
+  });
 }
 
 var app = express();
@@ -94,7 +131,16 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 5000));
+
+app.get('/info', function(request, response) {
+  console.log([request.headers.host, 'google.com'].indexOf("localhost") > -1);
+  response.status(200).json({
+    request: request.headers
+  });
+});
+
 app.get('/api', function(request, response) {
+  filter_request(request, response);
   var url = request.query.url;
   if (!url) {
     response.status(400)
@@ -114,6 +160,7 @@ app.get('/api', function(request, response) {
 });
 
 app.get('/mp3', function(request, response) {
+  filter_request(request, response);
   var url = request.query.url;
   if (!url) {
     response.status(400)
@@ -130,7 +177,7 @@ app.get('/mp3', function(request, response) {
     //filter: 'audioonly',
   });
   let file_mp3 = `${dir}/${id}.mp3`;
-
+  logging(file_mp3);
   let start = Date.now();
   ffmpeg(stream)
     .audioBitrate(128)
@@ -144,27 +191,6 @@ app.get('/mp3', function(request, response) {
       });
     })
     .on('end', () => {
-      var obj = {
-        file: file_mp3,
-        date: currdate(),
-        timestamp: currdate('timestamp')
-      };
-      if (fs.existsSync('tmp/saved.log')) {
-        fs.readFile('tmp/saved.log', 'utf8', function(err, data) {
-          if (err) {
-            throw err;
-          };
-          obj.push(JSON.parse(data));
-        });
-      }
-      fs.writeFile('tmp/saved.log', JSON.stringify(obj), {
-        overwrite: false
-      }, function(err) {
-        if (err) {
-          throw err;
-        };
-        //console.log('It\'s saved!');
-      });
       response.status(200).json({
         success: true,
         file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
@@ -175,6 +201,7 @@ app.get('/mp3', function(request, response) {
 });
 
 app.get('/download', function(request, response) {
+  filter_request(request, response);
   var file = request.query.file;
   if (!file) {
     response.status(400)
@@ -199,6 +226,7 @@ app.get('/download', function(request, response) {
 });
 
 app.get('/delete', function(request, response) {
+  filter_request(request, response);
   var file = request.query.file;
   if (!file) {
     response.status(400)
@@ -210,6 +238,42 @@ app.get('/delete', function(request, response) {
   }
   if (fs.existsSync(file)) {
     fs.unlink(file);
+  }
+});
+
+app.get('/rewrite', function(request, response) {
+  var file = request.query.file;
+  var content = request.query.text;
+  if (!file || !content) {
+    response.status(400)
+      .json({
+        success: false,
+        message: 'URL must be specified'
+      });
+    return;
+  }
+  if (fs.existsSync(file)) {
+    fs.writeFile(file, content, {
+      overwrite: false
+    }, function(err) {
+      if (err) {
+        throw err;
+      };
+      //console.log('It\'s saved!');
+    });
+  }
+});
+
+app.get('/get_log', function(request, response) {
+  if (fs.existsSync('tmp/saved.log')) {
+    fs.readFile('tmp/saved.log', 'utf8', function(err, data) {
+      if (err) {
+        throw err;
+      };
+      response.status(200)
+      response.setHeader('Content-Type', 'application/json')
+      response.end(data);
+    });
   }
 });
 
