@@ -92,7 +92,7 @@ function filter_request(req, res) {
   var ref = req.headers.referer;
   var host = req.headers.host;
   if (host != 'localhost:5000') {
-    if (!ref || !req.match(/localhost|akarmas\.com/gm)) {
+    if (!ref || !get_hostname(ref).match(/about\-devices|akarmas\.com/gm)) {
       res.status(400)
         .json({
           success: false,
@@ -101,6 +101,24 @@ function filter_request(req, res) {
       return;
     }
   }
+}
+
+function get_hostname(url) {
+  var hostname;
+  //find & remove protocol (http, ftp, etc.) and get hostname
+
+  if (url.indexOf("//") > -1) {
+    hostname = url.split('/')[2];
+  } else {
+    hostname = url.split('/')[0];
+  }
+
+  //find & remove port number
+  hostname = hostname.split(':')[0];
+  //find & remove "?"
+  hostname = hostname.split('?')[0];
+
+  return hostname;
 }
 
 function logging(file_mp3) {
@@ -170,34 +188,58 @@ app.get('/mp3', function(request, response) {
       });
     return;
   }
-  let id = YouTubeGetID(url);
 
-  let stream = ytdl(id, {
-    quality: 'highestaudio',
-    //filter: 'audioonly',
-  });
+  let id = YouTubeGetID(url);
   let file_mp3 = `${dir}/${id}.mp3`;
   logging(file_mp3);
   let start = Date.now();
-  ffmpeg(stream)
-    .audioBitrate(128)
-    .on('progress', (p) => {
-      readline.cursorTo(process.stdout, 0);
-      process.stdout.write(`${p.targetSize} kb downloaded`);
-    })
-    .on('error', function(err) {
-      response.status(200).json({
-        error: err.message
+
+  if (request.headers.host != 'localhost:5000') {
+    if (!fs.existsSync(file_mp3)) {
+      let stream = ytdl(id, {
+        quality: 'highestaudio',
+        //filter: 'audioonly',
       });
-    })
-    .on('end', () => {
+      ffmpeg(stream)
+        .audioBitrate(128)
+        .on('progress', (p) => {
+          readline.cursorTo(process.stdout, 0);
+          process.stdout.write(`${p.targetSize} kb downloaded`);
+        })
+        .on('error', function(err) {
+          response.status(200).json({
+            error: err.message
+          });
+        })
+        .on('end', () => {
+          response.status(200).json({
+            success: true,
+            file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
+            time: `${(Date.now() - start) / 1000}s`
+          });
+        })
+        .save(file_mp3);
+    } else {
       response.status(200).json({
         success: true,
         file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
         time: `${(Date.now() - start) / 1000}s`
       });
-    })
-    .save(file_mp3);
+    }
+  } else {
+    fs.writeFile(file_mp3, '', {
+      overwrite: true
+    }, function(err) {
+      if (err) {
+        //throw err;
+      };
+      response.status(200).json({
+        success: true,
+        file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
+        time: `${(Date.now() - start) / 1000}s`
+      });
+    });
+  }
 });
 
 app.get('/download', function(request, response) {
