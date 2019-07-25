@@ -57,6 +57,9 @@ function YouTubeGetID(url) {
   } else {
     ID = url;
   }
+  if (ID.indexOf('?') > -1){
+    ID.replace(/[\?]/gm, '');
+  }
   return ID;
 }
 
@@ -160,6 +163,12 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 5000));
 
+app.all('*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+});
+
 app.get('/info', function (request, response) {
   console.log([request.headers.host, 'google.com'].indexOf("localhost") > -1);
   response.status(200).json({
@@ -201,6 +210,7 @@ app.get('/mp3', function (request, response) {
 
   let id = YouTubeGetID(url);
   let file_mp3 = `${dir}/${id}.mp3`;
+  let siteurl = (request.protocol === 'https' ? 'https://' : 'http://') + request.headers.host + '/download?file=';
   logging(file_mp3);
   let start = Date.now();
 
@@ -224,7 +234,7 @@ app.get('/mp3', function (request, response) {
         .on('end', () => {
           response.status(200).json({
             success: true,
-            file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
+            file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
             time: `${(Date.now() - start) / 1000}s`
           });
         })
@@ -232,7 +242,7 @@ app.get('/mp3', function (request, response) {
     } else {
       response.status(200).json({
         success: true,
-        file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
+        file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
         time: `${(Date.now() - start) / 1000}s`
       });
     }
@@ -245,7 +255,8 @@ app.get('/mp3', function (request, response) {
       };
       response.status(200).json({
         success: true,
-        file: file_mp3.replace(/^.\/tmp\//gm, '/download?file='),
+        id: id,
+        file: file_mp3,//.replace(/^.\/tmp\//gm, '/download?file='),
         time: `${(Date.now() - start) / 1000}s`
       });
     });
