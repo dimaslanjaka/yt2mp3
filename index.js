@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 const fs = require('fs');
 const ytdl = require("ytdl-core");
 const express = require("express");
+const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const bodyParser = require("body-parser");
 const readline = require('readline');
 const ffmpeg = require('fluent-ffmpeg');
@@ -14,13 +16,49 @@ const nDate = new Date().toLocaleString('en-US', {
 });
 const dir = './tmp';
 const mkdirp = require('mkdirp');
-const GoogleRecaptcha = require('google-recaptcha')
-const googleRecaptcha = new GoogleRecaptcha({ secret: '6LdSg5gUAAAAAL7aiyHjXKArlkF0R7HAlA99oMYG' })
+const recaptcha_secret = '6LdSg5gUAAAAAL7aiyHjXKArlkF0R7HAlA99oMYG';
+const cookieParser = require('cookie-parser'); // module for parsing cookies
+const request = require("request");
 mkdirp(dir, function (err) {
   if (err) {
     console.log(err);
   }
 });
+const dimas = {};
+dimas.ip = function (req) {
+  var ip = req.headers['x-forwarded-for'] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    (req.connection.socket ? req.connection.socket.remoteAddress : '127.0.0.1');
+  return ip;
+}
+dimas.sc = function (res, name, value) {
+  return res.cookie(name, value, {
+    expire: new Date(Date.now() + (3600 * 1000)),
+    maxAge: 600000,
+    httpOnly: true
+  });
+}
+
+dimas.rc = function (name) {
+  return clearCookie(name);
+}
+
+dimas.gc = function (req, name) {
+  return req.cookies[name];
+}
+
+dimas.c = function (url) {
+  request({
+    url: url,
+    json: true
+  }, function (error, response, body) {
+
+    if (!error && response.statusCode === 200) {
+      console.log(body) // Print the json response
+    }
+  })
+}
 
 function getInfo(url) {
   return new Promise(function (resolve, reject) {
@@ -41,15 +79,6 @@ function getInfo(url) {
   });
 }
 
-function urlparam(name, url) {
-  name = name.replace(/[\[\]]/g, '\\$&');
-  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-    results = regex.exec(url);
-  if (!results) return null;
-  if (!results[2]) return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
 function YouTubeGetID(url) {
   var ID = '';
   url = url.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
@@ -60,10 +89,6 @@ function YouTubeGetID(url) {
     ID = url;
   }
   return ID;
-}
-
-function IDTrim(str) {
-  return str.replace(/^\s+|\s+$/g, '').replace(/[\?]$/gm, '');;
 }
 
 function pdleft(val) {
@@ -94,41 +119,31 @@ function currdate(set = false) {
   }
 }
 
-function filter_request(req, res) {
-  var ref = req.headers.referer;
+function filter_request(req, res, callback = false) {
+  var cookie_ = req.query.cookie || req.query.session;
+  var ref = req.headers.referer || req.headers.referrer;
   var host = req.headers.host;
-  var recaptchaResponse = req.query.H;
-  if (!ref || !ref.match(/akarmas\.com|agc\.io|about\-devices\.me|dimaslanjaka/gm)){
-    googleRecaptcha.verify({ response: recaptchaResponse }, (error) => {
-      if (error) {
-        res.status(400)
-          .json({
-            success: false,
-            message: 'Invalid Headers [R#' + ref + ']',
-            headers: req.headers
-          });
-        return;
-      }
-    });
+  let RM = ref && ref.match(/akarmas\.com|agc\.io|about\-devices\.me|dimaslanjaka|localhost/gm);
+  if (RM) {
+    cb(callback);
   }
+
+  if (!RM) {
+    if (!cookie_) {
+      res.status(400).json({
+        error: 'Unauthorized'
+      });
+    } else {
+      cb(callback);
+    }
+  }
+  return;
 }
 
-function get_hostname(url) {
-  var hostname;
-  //find & remove protocol (http, ftp, etc.) and get hostname
-
-  if (url.indexOf("//") > -1) {
-    hostname = url.split('/')[2];
-  } else {
-    hostname = url.split('/')[0];
+function cb(callback) {
+  if (typeof callback == 'function') {
+    callback();
   }
-
-  //find & remove port number
-  hostname = hostname.split(':')[0];
-  //find & remove "?"
-  hostname = hostname.split('?')[0];
-
-  return hostname;
 }
 
 function logging(file_mp3) {
@@ -166,13 +181,13 @@ var app = express();
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 5000));
 
 app.all('*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header('Access-Control-Allow-Credentials', true);
+
   next();
 });
 
@@ -207,12 +222,11 @@ app.get('/mp3', function (request, response) {
   filter_request(request, response);
   var url = request.query.url;
   if (!url) {
-    response.status(400)
+    return response.status(400)
       .json({
         success: false,
         message: 'URL must be specified'
       });
-    return;
   }
 
   let id = YouTubeGetID(url).toString().replace(/[\?]$/gm, '');
@@ -220,77 +234,69 @@ app.get('/mp3', function (request, response) {
   let siteurl = (request.protocol === 'https' ? 'https://' : 'http://') + request.headers.host + '/download?file=';
   logging(file_mp3);
   let start = Date.now();
+  let save_bandwidth = false;
 
-  if (request.headers.host != 'localhost:5000') {
-    if (!fs.existsSync(file_mp3)) {
-      let stream = ytdl(id, {
-        quality: 'highestaudio',
-        //filter: 'audioonly',
-      });
-      ffmpeg(stream)
-        .audioBitrate(128)
-        .on('progress', (p) => {
-          readline.cursorTo(process.stdout, 0);
-          process.stdout.write(`${p.targetSize} kb downloaded`);
-        })
-        .on('error', function (err) {
-          response.status(200).json({
-            error: err.message
-          });
-        })
-        .on('end', () => {
-          response.status(200).json({
-            success: true,
-            file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
-            time: `${(Date.now() - start) / 1000}s`
-          });
-        })
-        .save(file_mp3);
-    } else {
-      response.status(200).json({
-        success: true,
-        file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
-        time: `${(Date.now() - start) / 1000}s`
-      });
-    }
+  if (!fs.existsSync(file_mp3)) {
+    let stream = ytdl(id, {
+      quality: 'highestaudio',
+      //filter: 'audioonly',
+    });
+    let bitrate = request.query.bitrate ? request.query.bitrate : 128;
+    ffmpeg(stream)
+      .audioBitrate(bitrate)
+      .on('progress', (p) => {
+        readline.cursorTo(process.stdout, 0);
+        process.stdout.write(`${p.targetSize} kb downloaded`);
+      })
+      .on('error', function (err) {
+        return response.status(200).json({
+          error: err.message
+        });
+      })
+      .on('end', () => {
+        return response.status(200).json({
+          success: true,
+          file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
+          time: `${(Date.now() - start) / 1000}s`
+        });
+      })
+      .save(file_mp3);
   } else {
-    fs.writeFile(file_mp3, '', {
-      overwrite: true
-    }, function (err) {
-      if (err) {
-        //throw err;
-      };
-      response.status(200).json({
-        success: true,
-        id: id,
-        file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
-        time: `${(Date.now() - start) / 1000}s`
-      });
+    return response.status(200).json({
+      success: true,
+      file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
+      time: `${(Date.now() - start) / 1000}s`
     });
   }
 });
 
 app.get('/download', function (request, response) {
-  filter_request(request, response);
-  var file = request.query.file;
-  if (!file) {
-    response.status(400)
-      .json({
-        success: false,
-        message: 'FILE must be specified'
+  let sess = request.session;
+  filter_request(request, response, function () {
+    var file = request.query.file;
+    var filename = (request.query.filename ? request.query.filename : file);
+    if (!file) {
+      return response.status(400)
+        .json({
+          success: false,
+          message: 'FILE must be specified'
+        });
+    } else {
+      if (!file.match(/tmp\//gm)) {
+        file = 'tmp/' + file;
+      }
+      return response.download(file, filename + '.mp3', function (err) {
+        if (err) {
+          // Check if headers have been sent
+          if (response.headersSent) {
+            // You may want to log something here or do something else
+          } else {
+            return response.sendStatus(404); // 404, maybe 500 depending on err
+          }
+        }
       });
-    return;
-  }
-  if (!file.match(/tmp\//gm)) {
-    file = 'tmp/' + file;
-  }
-  if (fs.existsSync(file)) {
-    response.download(file, request.query.filename + '.mp3' || file + '.mp3');
-  } else {
-    response.status(200).json({
-      error: `file: ${file} doesnt exists`
-    });
-  }
+    }
+  });
 });
 
 app.get('/delete', function (request, response) {
@@ -305,7 +311,10 @@ app.get('/delete', function (request, response) {
     return;
   }
   fs.unlink(file, function (err) {
-    response.status(200).json({ file: file, error: (err ? true : false) })
+    response.status(200).json({
+      file: file,
+      error: (err ? true : false)
+    })
   });
 });
 
@@ -324,7 +333,10 @@ app.get('/rewrite', function (request, response) {
     fs.writeFile(file, content, {
       overwrite: false
     }, function (err) {
-      response.status(200).json({ file: file, error: (err ? true : false) });
+      response.status(200).json({
+        file: file,
+        error: (err ? true : false)
+      });
     });
   }
   return;
