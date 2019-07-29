@@ -57,10 +57,11 @@ function YouTubeGetID(url) {
   } else {
     ID = url;
   }
-  if (ID.indexOf('?') > -1){
-    ID.replace(/[\?]/gm, '');
-  }
   return ID;
+}
+
+function IDTrim(str) {
+  return str.replace(/^\s+|\s+$/g, '').replace(/[\?]$/gm, '');;
 }
 
 function pdleft(val) {
@@ -163,7 +164,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 5000));
 
-app.all('*', function(req, res, next) {
+app.all('*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header('Access-Control-Allow-Credentials', true);
   next();
@@ -208,7 +209,7 @@ app.get('/mp3', function (request, response) {
     return;
   }
 
-  let id = YouTubeGetID(url);
+  let id = YouTubeGetID(url).toString().replace(/[\?]$/gm, '');
   let file_mp3 = `${dir}/${id}.mp3`;
   let siteurl = (request.protocol === 'https' ? 'https://' : 'http://') + request.headers.host + '/download?file=';
   logging(file_mp3);
@@ -256,7 +257,7 @@ app.get('/mp3', function (request, response) {
       response.status(200).json({
         success: true,
         id: id,
-        file: file_mp3,//.replace(/^.\/tmp\//gm, '/download?file='),
+        file: file_mp3.replace(/^.\/tmp\//gm, `http://${request.headers.host}/download?file=`),
         time: `${(Date.now() - start) / 1000}s`
       });
     });
@@ -270,17 +271,15 @@ app.get('/download', function (request, response) {
     response.status(400)
       .json({
         success: false,
-        message: 'URL must be specified'
+        message: 'FILE must be specified'
       });
     return;
   }
+  if (!file.match(/tmp\//gm)){
+    file = 'tmp/'+file;
+  }
   if (fs.existsSync(file)) {
-    response.download(file, function (err) {
-      if (err) {
-        console.log(err);
-      }
-      fs.unlink(file);
-    });
+    response.download(file, request.query.filename + '.mp3' || file + '.mp3');
   } else {
     response.status(200).json({
       error: `file: ${file} doesnt exists`
@@ -326,7 +325,7 @@ app.get('/rewrite', function (request, response) {
 });
 
 app.get('/get_log', function (request, response) {
-  fs.exists('tmp/saved.log', function(e){
+  fs.exists('tmp/saved.log', function (e) {
     fs.readFile('tmp/saved.log', 'utf8', function (err, data) {
       if (err) {
         throw err;
@@ -335,7 +334,7 @@ app.get('/get_log', function (request, response) {
       let ONE_HOUR = 60 * 60 * 1000; /* ms */
       for (var key in jdata) {
         if (((new Date) - jdata[key].timestamp) > ONE_HOUR) {
-          fs.unlink(key, function(e){
+          fs.unlink(key, function (e) {
             console.log(e !== true);
           });
           jdata = delokey(jdata, key);
