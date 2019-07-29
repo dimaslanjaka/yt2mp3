@@ -17,6 +17,7 @@
     "ffmpeg": "^0.0.4",
     "ffmpeg-on-progress": "^1.0.0",
     "fluent-ffmpeg": "^2.1.2",
+    "google-recaptcha": "^1.1.0",
     "mkdirp": "^0.5.1",
     "ytdl-core": "^0.29.3"
   },

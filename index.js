@@ -14,6 +14,8 @@ const nDate = new Date().toLocaleString('en-US', {
 });
 const dir = './tmp';
 const mkdirp = require('mkdirp');
+const GoogleRecaptcha = require('google-recaptcha')
+const googleRecaptcha = new GoogleRecaptcha({ secret: '6LdSg5gUAAAAAL7aiyHjXKArlkF0R7HAlA99oMYG' })
 mkdirp(dir, function (err) {
   if (err) {
     console.log(err);
@@ -95,15 +97,19 @@ function currdate(set = false) {
 function filter_request(req, res) {
   var ref = req.headers.referer;
   var host = req.headers.host;
-  if (host != 'localhost:5000') {
-    if (!ref || !get_hostname(ref).match(/about\-devices|akarmas\.com/gm)) {
-      res.status(400)
-        .json({
-          success: false,
-          message: 'Invalid Headers [R]'
-        });
-      return;
-    }
+  var recaptchaResponse = req.query.H;
+  if (!ref || !ref.match(/akarmas\.com|agc\.io|about\-devices\.me|dimaslanjaka/gm)){
+    googleRecaptcha.verify({ response: recaptchaResponse }, (error) => {
+      if (error) {
+        res.status(400)
+          .json({
+            success: false,
+            message: 'Invalid Headers [R#' + ref + ']',
+            headers: req.headers
+          });
+        return;
+      }
+    });
   }
 }
 
@@ -275,8 +281,8 @@ app.get('/download', function (request, response) {
       });
     return;
   }
-  if (!file.match(/tmp\//gm)){
-    file = 'tmp/'+file;
+  if (!file.match(/tmp\//gm)) {
+    file = 'tmp/' + file;
   }
   if (fs.existsSync(file)) {
     response.download(file, request.query.filename + '.mp3' || file + '.mp3');
