@@ -126,9 +126,7 @@ function filter_request(req, res, callback = false) {
   let RM = ref && ref.match(/akarmas\.com|agc\.io|about\-devices\.me|dimaslanjaka|localhost/gm);
   if (RM) {
     cb(callback);
-  }
-
-  if (!RM) {
+  } else {
     if (!cookie_) {
       res.status(400).json({
         error: 'Unauthorized'
