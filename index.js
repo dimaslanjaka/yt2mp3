@@ -24,6 +24,7 @@ mkdirp(dir, function (err) {
     console.log(err);
   }
 });
+var CryptoJS = require("crypto-js");
 const dimas = {};
 dimas.ip = function (req) {
   var ip = req.headers['x-forwarded-for'] ||
@@ -58,6 +59,36 @@ dimas.c = function (url) {
       console.log(body) // Print the json response
     }
   })
+}
+
+dimas.salt = 'salt'; //salt
+dimas.iv = '1111111111111111'; //pass salt
+dimas.iterations = '999'; //iterations
+
+//--functions
+dimas.gkey = function (passphrase, salt) {
+  var key = CryptoJS.PBKDF2(passphrase, salt, {
+    hasher: CryptoJS.algo.SHA256,
+    keySize: 64 / 8,
+    iterations: dimas.iterations
+  });
+  return key;
+}
+
+dimas.enc = function (passphrase, plainText) {
+  var key = dimas.gkey(passphrase, dimas.salt);
+  var encrypted = CryptoJS.AES.encrypt(plainText, key, {
+    iv: CryptoJS.enc.Utf8.parse(dimas.iv)
+  });
+  return encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+}
+
+dimas.dec = function (passphrase, encryptedText) {
+  var key = dimas.gkey(passphrase, dimas.salt);
+  var decrypted = CryptoJS.AES.decrypt(encryptedText, key, {
+    iv: CryptoJS.enc.Utf8.parse(dimas.iv)
+  });
+  return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
 function getInfo(url) {
@@ -128,9 +159,11 @@ function filter_request(req, res, callback = false) {
     cb(callback);
   } else {
     if (!cookie_) {
-      res.status(400).json({
+      /*res.status(400).json({
         error: 'Unauthorized'
-      });
+      });*/
+      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl, enc = dimas.enc('dimaslanjaka', fullUrl);
+      return res.redirect('https://agc.akarmas.com/verify/safelink/' + Buffer.from(enc).toString('base64'));
     } else {
       cb(callback);
     }
@@ -187,6 +220,15 @@ app.all('*', function (req, res, next) {
   res.header('Access-Control-Allow-Credentials', true);
 
   next();
+});
+
+app.get('/crypto', function (request, response) {
+  var q = request.query,
+    str = q.str || q.q || q.s || q.string || q.enc,
+    enc = dimas.enc('dimaslanjaka', str),
+    dec = dimas.dec('dimaslanjaka', enc);
+  console.log(enc, dec);
+  response.status(200).json([str, encodeURIComponent(enc), Buffer.from(enc).toString('base64'), enc, dec]);
 });
 
 app.get('/info', function (request, response) {
