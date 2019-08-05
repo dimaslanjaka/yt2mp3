@@ -10,7 +10,7 @@ const FileStore = require('session-file-store')(session);
 const bodyParser = require("body-parser");
 const readline = require('readline');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegOnProgress = require('ffmpeg-on-progress')
+//const ffmpegOnProgress = require('ffmpeg-on-progress')
 const nDate = new Date().toLocaleString('en-US', {
   timeZone: 'Asia/Jakarta'
 });
