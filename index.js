@@ -163,7 +163,7 @@ function filter_request(req, res, callback = false) {
         error: 'Unauthorized'
       });*/
       var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl, enc = dimas.enc('dimaslanjaka', fullUrl);
-      return res.redirect('https://agc.akarmas.com/verify/safelink/' + Buffer.from(enc).toString('base64'));
+      return res.redirect('https://dimaslanjaka.github.io/page/safelink.html?url' + Buffer.from(enc).toString('base64'));
     } else {
       cb(callback);
     }
