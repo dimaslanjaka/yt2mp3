@@ -11,7 +11,3 @@ npm-debug.log
 
 #folder
 tmp/
-
-# Docker
-Dockerfile
-docker-compose.yml
