@@ -1,13 +1,7 @@
-# Node build artifacts
-node_modules
-npm-debug.log
-
-# Local development
-*.env
-*.dev
-.DS_Store
-*.mp3
-*.log
-
-#folder
+node_modules/
 tmp/
+
+# Docker
+Dockerfile
+docker-compose.yml
+host.lnk
