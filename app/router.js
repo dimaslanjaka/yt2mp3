@@ -18,15 +18,28 @@ function f(app, passport) {
     var query = req.query.q || null;
     var token = req.query.token || null;
     //console.log(query, token, req.query);
-    yt.search(query, token, function (error, items, response) {
-      if (error) {
-        console.log(error);
-        res.json({ error: true });
-      } else {
-        response.error = false;
-        res.json(response.data);
-      }
-    });
+    if (query) {
+      yt.search(query, token, function (error, items, response) {
+        if (error) {
+          console.log(error);
+          res.json({ error: true });
+        } else {
+          response.error = false;
+          response.data.error = false;
+          response.data.next =
+            serverInfo(req).origin +
+            req.path +
+            "?query=" +
+            query +
+            "&token=" +
+            response.data.nextPageToken;
+
+          res.json(response.data);
+        }
+      });
+    } else {
+      res.json({ error: true, message: "query required" });
+    }
   });
 
   //grab mp3
@@ -56,6 +69,23 @@ function f(app, passport) {
     if (id) {
     }
   });
+}
+
+/**
+ * Get Server Info
+ * @param {import("express").Request} req
+ */
+function serverInfo(req) {
+  var userIP = req.socket.remoteAddress;
+  var hostname = req.hostname;
+  var protocol = req.protocol;
+  var origin = `${protocol}://${hostname}`;
+  return {
+    host: hostname,
+    protocol: protocol,
+    ip: userIP,
+    origin: origin,
+  };
 }
 
 module.exports = f;
