@@ -1,6 +1,6 @@
 {
   "name": "yt2mp3",
-  "version": "0.2.6",
+  "version": "0.2.9",
   "description": "Youtube mp3 converter",
   "engines": {
     "node": "12.x"
