@@ -13,6 +13,8 @@ var wmi = new WMI();
 //var is = require("./src/is");
 const os = require("os");
 const computerName = os.hostname();
+let RedisStore = require("connect-redis")(session);
+let redisClient = redis.createClient();
 
 // set up our express application
 app.use(morgan("dev")); // log every request to the console
@@ -23,16 +25,23 @@ app.use(
     extended: true,
   })
 );
-console.log(wmi.g_auth());
+//console.log(wmi.g_auth());
 app.set("view engine", "ejs"); // set up ejs for templating
 app.use(express.static(__dirname));
 app.locals.rmWhitespace = true;
+
+app.set("trust proxy", 1);
 // required for passport
 app.use(
   session({
-    secret: "dimxxx", // session secret
-    resave: true,
+    cookie: {
+      secure: true,
+      maxAge: 60000,
+    },
+    store: new RedisStore({ client: redisClient }),
+    secret: "secret",
     saveUninitialized: true,
+    resave: false,
   })
 );
 app.use(passport.initialize());
