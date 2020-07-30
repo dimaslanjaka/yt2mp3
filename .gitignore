@@ -5,3 +5,5 @@ tmp/
 Dockerfile
 docker-compose.yml
 host.lnk
+
+.vscode/
