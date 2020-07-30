@@ -8,9 +8,9 @@
   "engineStrict": true,
   "main": "index.js",
   "scripts": {
-    "preinstall": "npm i gulp-cli typescript nodemon -g -f",
+    "dev:install": "npm i gulp-cli typescript nodemon -g -f",
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev:run": "nodemon index.js",
     "test": "node test.js"
   },
   "dependencies": {
