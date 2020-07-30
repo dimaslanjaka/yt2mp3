@@ -10,7 +10,7 @@ var session = require("express-session");
 //var google = require("googleapis");
 var WMI = require("./app/class.js");
 var wmi = new WMI();
-var is = require("./src/is");
+//var is = require("./src/is");
 const os = require("os");
 const computerName = os.hostname();
 
