@@ -7,7 +7,7 @@
   },
   "engineStrict": true,
   "main": "index.js",
-    "scripts": {
+  "scripts": {
     "dev:install": "npm i gulp-cli typescript nodemon -g -f",
     "start": "node index.js",
     "dev:run": "nodemon index.js",
@@ -83,7 +83,6 @@
     "gulp-terser": "^1.2.1",
     "gulp-uglify": "^3.0.2",
     "net": "^1.0.2",
-    "node": "^14.5.0",
     "portfinder": "^1.0.28",
     "sass": "^1.26.10",
     "ytdl-core": "^3.2.0"

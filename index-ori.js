@@ -1,6 +1,6 @@
 var express = require("express");
 var app = express();
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 5000;
 var passport = require("passport");
 var flash = require("connect-flash");
 var morgan = require("morgan");
@@ -62,14 +62,18 @@ require("./app/router.js")(app, passport);
  * Run
  */
 const portfinder = require("portfinder");
-portfinder
-  .getPortPromise()
-  .then((foundport) => {
-    run(foundport);
-  })
-  .catch((err) => {
-    run(port);
-  });
+if (computerName == "L3n4r0x") {
+  portfinder
+    .getPortPromise()
+    .then((foundport) => {
+      run(foundport);
+    })
+    .catch((err) => {
+      run(port);
+    });
+} else {
+  run(port);
+}
 
 function run(port) {
   app.listen(port);
