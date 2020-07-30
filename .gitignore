@@ -7,3 +7,4 @@ docker-compose.yml
 host.lnk
 
 .vscode/
+package-lock.json
