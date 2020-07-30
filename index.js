@@ -71,28 +71,12 @@ portfinder
     run(port);
   });
 
-const readline = require("readline");
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 function run(port) {
   app.listen(port);
   const url = `http://127.0.0.1:${port}`;
   console.log("NodeJS server running at port " + port);
   console.log(`open on ${computerName} ${url}`);
   if (computerName == "L3n4r0x") {
-    const open = require("open");
-    rl.question(
-      `Want to open ${url} ? ` + "\n (y/yes) to open, type any for cancel: \t",
-      async function (yes) {
-        if (/^(y|yes)$/s.test(yes)) {
-          await open(`http://127.0.0.1:${port}`);
-        }
-      }
-    );
-    setTimeout(function () {
-      rl.close();
-    }, 10000);
+    require("./openbrowser")(port);
   }
 }

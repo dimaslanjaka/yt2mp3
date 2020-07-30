@@ -59,7 +59,10 @@
   "keywords": [
     "node",
     "heroku",
-    "express"
+    "express",
+    "youtube",
+    "mp3",
+    "search"
   ],
   "license": "MIT",
   "devDependencies": {
