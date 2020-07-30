@@ -19,6 +19,10 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 }
 
 //const url = "https://youtu.be/cr9NEWOjuEg";
+/**
+ * Youtube downloader core
+ * @author Dimas Lanjaka
+ */
 class YTDL {
   /**
    * API KEY GOOGLE
@@ -45,6 +49,7 @@ class YTDL {
 
   /**
    * Get Blocked Keys
+   * @author Dimas Lanjaka
    */
   getBlockedKeys() {
     /**
