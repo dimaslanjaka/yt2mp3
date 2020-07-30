@@ -13,8 +13,7 @@ var wmi = new WMI();
 //var is = require("./src/is");
 const os = require("os");
 const computerName = os.hostname();
-let RedisStore = require("connect-redis")(session);
-let redisClient = redis.createClient();
+var cookieSession = require("cookie-session");
 
 // set up our express application
 app.use(morgan("dev")); // log every request to the console
@@ -33,15 +32,10 @@ app.locals.rmWhitespace = true;
 app.set("trust proxy", 1);
 // required for passport
 app.use(
-  session({
-    cookie: {
-      secure: true,
-      maxAge: 60000,
-    },
-    store: new RedisStore({ client: redisClient }),
-    secret: "secret",
-    saveUninitialized: true,
-    resave: false,
+  cookieSession({
+    name: "session",
+    keys: ["session"],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
 app.use(passport.initialize());
