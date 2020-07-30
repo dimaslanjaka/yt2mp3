@@ -88,7 +88,24 @@ function browserSync() {
   });
 }
 
+function build() {
+  const source = "./index-ori.js";
+
+  return src(source)
+    .pipe(changed(source))
+    .pipe(concat("index.js"))
+    .pipe(uglify())
+    .pipe(
+      rename({
+        extname: ".min.js",
+      })
+    )
+    .pipe(dest("./"))
+    .pipe(browsersync.stream());
+}
+
 // Tasks to define the execution of the functions simultaneously or in series
 
 //exports.watch = parallel(watchFiles, browserSync);
 //exports.default = series(clear, parallel(js, css, img));
+exports.default = series(build);

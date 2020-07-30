@@ -3,13 +3,12 @@
   "version": "0.2.6",
   "description": "Youtube mp3 converter",
   "engines": {
-    "node": "^6.10.2"
+    "node": "12.x"
   },
   "engineStrict": true,
   "main": "index.js",
   "scripts": {
-    "postinstall": "",
-    "preinstall": "npm i gulp-cli typescript nodemon -g",
+    "preinstall": "npm i gulp-cli typescript nodemon -g -f",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "node test.js"
