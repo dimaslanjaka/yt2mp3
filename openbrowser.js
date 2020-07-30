@@ -6,7 +6,8 @@ const rl = readline.createInterface({
 module.exports = function (port) {
   const open = require("open");
   rl.question(
-    `Want to open ${url} ? ` + "\n (y/yes) to open, type any for cancel: \t",
+    `Want to open http://127.0.0.1:${port} ? ` +
+      "\n (y/yes) to open, type any for cancel: \t",
     async function (yes) {
       if (/^(y|yes)$/s.test(yes)) {
         await open(`http://127.0.0.1:${port}`);
