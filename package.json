@@ -7,7 +7,7 @@
   },
   "engineStrict": true,
   "main": "index.js",
-  "scripts": {
+    "scripts": {
     "dev:install": "npm i gulp-cli typescript nodemon -g -f",
     "start": "node index.js",
     "dev:run": "nodemon index.js",
