@@ -33,8 +33,8 @@ app.set("trust proxy", 1);
 // required for passport
 app.use(
   cookieSession({
-    name: "session",
-    keys: ["session"],
+    name: "SessionKey",
+    keys: ["SessionKey"],
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
