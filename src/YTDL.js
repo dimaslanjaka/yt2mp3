@@ -129,10 +129,12 @@ class YTDL {
     if (!bitrate || typeof bitrate != "number") {
       bitrate = 128;
     }
+    //set log readline to 0
+    readline.cursorTo(process.stdout, 0);
+
     ffmpeg(stream)
       .audioBitrate(bitrate)
       .on("progress", (p) => {
-        readline.cursorTo(process.stdout, 0);
         process.stdout.write(`${p.targetSize} kb downloaded`);
         callback("progress", p.targetSize);
         writeFile(logprocess, p);
@@ -142,7 +144,7 @@ class YTDL {
         callback("error", err);
       })
       .on("end", () => {
-        console.log("success saved to " + file_mp3);
+        process.stdout.write("success saved to " + file_mp3);
         callback("success", file_mp3);
 
         const log = readFile(logsuccess) || {};

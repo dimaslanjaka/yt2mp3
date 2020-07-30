@@ -38,11 +38,14 @@ function f(app, passport) {
         if (!res.headersSent) {
           var arg = arguments;
           res.json({
+            error: false,
             status: arg[0],
             size: arg[1],
           });
         }
       });
+    } else {
+      res.json({ error: true, message: "Youtube video id required" });
     }
   });
 

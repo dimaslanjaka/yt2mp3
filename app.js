@@ -1,6 +1,6 @@
 var express = require("express");
 var app = express();
-var port = process.env.PORT || 5000;
+var port = process.env.PORT || 5555;
 var passport = require("passport");
 var flash = require("connect-flash");
 var morgan = require("morgan");
@@ -10,6 +10,7 @@ var session = require("express-session");
 var google = require("googleapis");
 var WMI = require("./app/class.js");
 var wmi = new WMI();
+var is = require("./src/is");
 
 // set up our express application
 app.use(morgan("dev")); // log every request to the console
@@ -58,5 +59,10 @@ require("./app/router.js")(app, passport);
 /**
  * Run
  */
-app.listen(port);
+try {
+  app.listen(port);
+} catch (error) {
+  console.log(error);
+}
+
 console.log("NodeJS server running at port " + port);

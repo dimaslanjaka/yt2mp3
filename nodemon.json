@@ -15,7 +15,7 @@
   "events": {
     "start": "node -e console.clear()"
   },
-  "watch": ["views", "public", "config", "ytdl.js", "app", "src"],
+  "watch": ["views", "public", "config", "app.js", "app", "src"],
   "env": {
     "NODE_ENV": "development"
   },
