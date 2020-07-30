@@ -18,8 +18,12 @@ function build() {
   //.pipe(browsersync.stream());
 }
 
+function watchFiles() {
+  watch("./index-ori.js", build);
+}
+
 // Tasks to define the execution of the functions simultaneously or in series
 
-//exports.watch = parallel(watchFiles, browserSync);
+exports.watch = parallel(watchFiles);
 //exports.default = series(clear, parallel(js, css, img));
-exports.default = series(build);
+exports.default = series(build, watchFiles);
