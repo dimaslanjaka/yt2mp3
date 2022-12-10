@@ -53,7 +53,7 @@
     "m3u8stream": "^0.7.1",
     "method-override": "latest",
     "mkdirp": "^1.0.4",
-    "moment": "^2.27.0",
+    "moment": "^2.29.4",
     "mongoose": "^5.9.26",
     "morgan": "^1.10.0",
     "net": "^1.0.2",
