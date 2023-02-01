@@ -54,7 +54,7 @@
     "method-override": "latest",
     "mkdirp": "^1.0.4",
     "moment": "^2.27.0",
-    "mongoose": "^5.9.26",
+    "mongoose": "^5.13.15",
     "morgan": "^1.10.0",
     "net": "^1.0.2",
     "node-localstorage": "^2.1.6",
