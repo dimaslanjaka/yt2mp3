@@ -118,7 +118,7 @@ class YTDL {
    * Download MP3
    * @param {string} VideoID
    * @param {number} bitrate
-   * @param {function("progress"|"error"|"success", any)} callback
+   * @param {function("progress"|"error"|"success", { path: number|string, info: ytdl.videoInfo })} callback
    */
   downloadMp3(VideoID, bitrate, callback) {
     if (typeof callback != "function") {
@@ -132,40 +132,45 @@ class YTDL {
     const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
     resolve.dir(dirname(file_mp3));
     resolve.file(file_mp3);
-    let stream = ytdl(VideoID, {
-      quality: "highestaudio",
-      //filter: 'audioonly',
+    ytdl.getInfo(VideoID).then(function (info) {
+      let stream = ytdl(VideoID, {
+        quality: "highestaudio",
+        //filter: 'audioonly',
+      });
+      if (!bitrate || typeof bitrate != "number") {
+        bitrate = 128;
+      }
+      //set log readline to 0
+      readline.cursorTo(process.stdout, 0);
+
+      ffmpeg(stream)
+        .audioBitrate(bitrate)
+        .on("progress", (p) => {
+          process.stdout.write(`${p.targetSize} kb downloaded\n`);
+          callback("progress", p.targetSize);
+          writeFile(logprocess, p);
+        })
+        .on("error", function (err) {
+          console.log(err);
+          callback("error", err);
+        })
+        .on("end", () => {
+          process.stdout.write("success saved to " + file_mp3 + "\n");
+          callback("success", {
+            path: file_mp3,
+            info,
+          });
+
+          const log = readFile(logsuccess) || {};
+          log[file_mp3] = {
+            expire: moment(new Date()).add(5, "m").toDate(),
+            url: "/download?id=" + VideoID,
+          };
+          writeFile(logsuccess, log);
+          writeFile(logprocess, { status: "success" });
+        })
+        .save(file_mp3);
     });
-    if (!bitrate || typeof bitrate != "number") {
-      bitrate = 128;
-    }
-    //set log readline to 0
-    readline.cursorTo(process.stdout, 0);
-
-    ffmpeg(stream)
-      .audioBitrate(bitrate)
-      .on("progress", (p) => {
-        process.stdout.write(`${p.targetSize} kb downloaded`);
-        callback("progress", p.targetSize);
-        writeFile(logprocess, p);
-      })
-      .on("error", function (err) {
-        console.log(err);
-        callback("error", err);
-      })
-      .on("end", () => {
-        process.stdout.write("success saved to " + file_mp3);
-        callback("success", file_mp3);
-
-        const log = readFile(logsuccess) || {};
-        log[file_mp3] = {
-          expire: moment(new Date()).add(5, "m").toDate(),
-          url: "/download?id=" + VideoID,
-        };
-        writeFile(logsuccess, log);
-        writeFile(logprocess, { status: "success" });
-      })
-      .save(file_mp3);
   }
 
   API_PARAMS = {};
