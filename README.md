@@ -1,7 +1,8 @@
-## L3n4r0x NodeJS project
+## yt2mp3 NodeJS project
 - Youtube to mp3 engine : [ytdl-core](https://github.com/fent/node-ytdl-core#readme)
 - Dynamic routing : [EJS](https://ejs.co/)
 - [FFMPEG](https://www.npmjs.com/package/ffmpeg)
+- [FFMPEG installation](http://www.ffmpeg.org/download.html)
 
 ## Decription of class
 class.js – tools for standard inheritance in JavaScript

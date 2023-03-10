@@ -130,7 +130,8 @@ class YTDL {
     const logsuccess = path.join(this.log.success, VideoID + ".json");
     const logprocess = path.join(this.log.process, VideoID + ".json");
     const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
-    // writeFile(file_mp3, "");
+    resolve.dir(dirname(file_mp3));
+    resolve.file(file_mp3);
     let stream = ytdl(VideoID, {
       quality: "highestaudio",
       //filter: 'audioonly',
