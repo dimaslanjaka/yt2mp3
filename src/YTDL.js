@@ -28,7 +28,7 @@ class YTDL {
    * API KEY GOOGLE
    * @type {string}
    */
-  API_KEY = null;
+  API_KEY;
   API_URL = "https://www.googleapis.com/youtube/v3/search";
 
   /**
@@ -55,15 +55,15 @@ class YTDL {
     /**
      * get blocked keys
      */
-    var blockedKeys = localStorage.getItem("blockedKeys");
-    var dump;
+    const blockedKeys = localStorage.getItem("blockedKeys");
+    let dump;
     if (blockedKeys) {
       dump = JSON.parse(blockedKeys);
     } else {
       dump = {};
     }
 
-    var lists = Object.keys(dump);
+    let lists = Object.keys(dump);
     if (!lists || !lists.length) {
       lists = [];
     }
@@ -105,6 +105,7 @@ class YTDL {
      */
     success: path.join(tmp, "success"),
   };
+
   /**
    * Download MP3
    * @param {string} VideoID
@@ -178,8 +179,8 @@ class YTDL {
       callback = pageToken;
     }
     const API_KEY = this.API_KEY;
-    var API_URL = this.API_URL;
-    var params = {
+    const API_URL = this.API_URL;
+    const params = {
       part: "snippet",
       key: API_KEY,
       q: query,
@@ -211,8 +212,8 @@ class YTDL {
       .catch(function (error) {
         //console.error(error);
         if (error.hasOwnProperty("data")) {
-          var msg = error.data.error.message;
-          var code = error.data.error.code;
+          const msg = error.data.error.message;
+          const code = error.data.error.code;
           //console.log(`error (${code}) ${msg} API: ${this.API_KEY}`);
           blockedKeys[API_KEY] = code;
           if (code == 403) {
@@ -259,11 +260,12 @@ function getFuncName() {
 
 const mkdirp = require("mkdirp");
 const { dirname } = require("path");
+
 /**
  * Write file recursive
  * @param {string} path
- * @param {any} contents
- * @param {any} cb callback of fs.writeFile
+ * @param {any} contents?
+ * @param {any} cb? callback of fs.writeFile
  */
 function writeFile(path, contents, cb) {
   if (!cb) {
@@ -293,7 +295,7 @@ function readFile(path) {
     fs.mkdirSync(dirname(path), { recursive: true });
   }
   if (fs.existsSync(path)) {
-    var read = fs.readFileSync(path).toString();
+    const read = fs.readFileSync(path).toString();
     if (is.json(read.trim())) {
       return JSON.parse(read.trim());
     }

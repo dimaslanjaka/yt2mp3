@@ -3,17 +3,18 @@ const YTDL = require("./YTDL");
 /**
  * API KEY List
  */
-var apis = [
+let apis = [
   "AIzaSyDm21ZMgT6KQpjo3T0BFVH3DjhykYU5bXM",
   "AIzaSyDjF63RkbOTm-n3gJ-a-hBwXt7EFW851vA",
   "AIzaSyDlna9xQsXvsCK5oUKAsYozuk5YHczAyS0",
 ];
 
-var yt = new YTDL.YTDL();
+const yt = new YTDL.YTDL();
 //remove blocked keys from key lists
 apis = apis.filter(function (el) {
   return !yt.getBlockedKeys().keys.includes(el);
 });
+
 /**
  * get random api
  */
