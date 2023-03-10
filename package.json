@@ -12,8 +12,7 @@
     "start": "node index.js",
     "dev:run": "nodemon index.js",
     "test": "node test.js",
-    "wsl-install": "npm install --platform=win32",
-    "wsl-rebuild": "npm rebuild --platform=win32"
+    "update": "npx npm-check-updates -u"
   },
   "dependencies": {
     "@types/node": "^14.0.27",
@@ -92,6 +91,6 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/express": "^4.17.12"
+    "npm-check-updates": "latest"
   }
 }
