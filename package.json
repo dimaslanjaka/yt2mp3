@@ -21,6 +21,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "moment": "^2.29.4",
     "node-localstorage": "^2.2.1",
+    "sbg-utility": "^1.0.8",
     "ytdl-core": "^3.2.0"
   },
   "repository": {

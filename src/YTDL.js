@@ -1,7 +1,6 @@
 const fs = require("fs");
 const ytdl = require("ytdl-core");
 const path = require("path");
-const getDirName = require("path").dirname;
 const ffmpeg = require("fluent-ffmpeg");
 const readline = require("readline");
 const axios = require("axios");
@@ -11,6 +10,15 @@ const is = require("./is");
 const tmp = path.join(ROOT, "tmp");
 const moment = require("moment");
 const resolve = require("./resolve");
+const { dirname } = require("path");
+const writefile = require("sbg-utility").writefile;
+const writeFile = function (dest, content) {
+  if (Buffer.isBuffer(content)) {
+    writefile(dest, content.toString());
+  } else {
+    writefile(dest, content);
+  }
+};
 
 if (typeof localStorage === "undefined" || localStorage === null) {
   var LocalStorage = require("node-localstorage").LocalStorage;
@@ -122,7 +130,7 @@ class YTDL {
     const logsuccess = path.join(this.log.success, VideoID + ".json");
     const logprocess = path.join(this.log.process, VideoID + ".json");
     const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
-    writeFile(file_mp3);
+    // writeFile(file_mp3, "");
     let stream = ytdl(VideoID, {
       quality: "highestaudio",
       //filter: 'audioonly',
@@ -256,34 +264,6 @@ function YouTubeGetID(url) {
  */
 function getFuncName() {
   return getFuncName.caller.name;
-}
-
-const mkdirp = require("mkdirp");
-const { dirname } = require("path");
-
-/**
- * Write file recursive
- * @param {string} path
- * @param {any} contents?
- * @param {any} cb? callback of fs.writeFile
- */
-function writeFile(path, contents, cb) {
-  if (!cb) {
-    cb = function () {};
-  }
-  //console.log(path);
-  fs.mkdirSync(getDirName(path), { recursive: true });
-  mkdirp(getDirName(path), function (err) {
-    if (err) return cb(err);
-    // if contents exists
-    if (contents) {
-      //console.log(typeof contents);
-      if (typeof contents == "object" || Array.isArray(contents)) {
-        contents = JSON.stringify(contents, null, 2);
-      }
-      fs.writeFile(path, contents, cb);
-    }
-  });
 }
 
 /**
