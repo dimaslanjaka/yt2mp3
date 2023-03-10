@@ -9,3 +9,5 @@ host.lnk
 .yarn/cache
 .yarn/*.gz
 .yarn/version*
+
+.env
