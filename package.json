@@ -92,5 +92,6 @@
   "license": "MIT",
   "devDependencies": {
     "npm-check-updates": "latest"
-  }
+  },
+  "packageManager": "yarn@3.4.1"
 }

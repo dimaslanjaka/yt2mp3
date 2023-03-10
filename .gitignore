@@ -6,4 +6,6 @@ Dockerfile
 docker-compose.yml
 host.lnk
 
-.vscode/
+.yarn/cache
+.yarn/*.gz
+.yarn/version*
