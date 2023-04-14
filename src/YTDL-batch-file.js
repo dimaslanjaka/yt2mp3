@@ -44,7 +44,9 @@ async function batch() {
             result.path,
             path.join(
               dest,
-              sanitizefn((title || result.info.videoDetails.title) + ".mp3")
+              sanitizefn((title || result.info.videoDetails.title) + ".mp3", {
+                replacement: " ",
+              }).replace(/\s+/gm, " ")
             ),
             {
               overwrite: true,
