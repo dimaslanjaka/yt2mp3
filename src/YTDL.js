@@ -11,6 +11,7 @@ const tmp = path.join(ROOT, "tmp");
 const moment = require("moment");
 const resolve = require("./resolve");
 const { dirname } = require("path");
+const { parseYTID } = require("./youtube-id-parser");
 const writefile = require("sbg-utility").writefile;
 const writeFile = function (dest, content) {
   if (Buffer.isBuffer(content)) {
@@ -126,6 +127,9 @@ class YTDL {
     }
     if (typeof bitrate == "function") {
       callback = bitrate;
+    }
+    if (VideoID.startsWith("http")) {
+      VideoID = parseYTID(VideoID);
     }
     const logsuccess = path.join(this.log.success, VideoID + ".json");
     const logprocess = path.join(this.log.process, VideoID + ".json");

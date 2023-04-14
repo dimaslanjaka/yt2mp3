@@ -2,6 +2,9 @@
   "files.exclude": {
     "**/node_modules": true
   },
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};${workspaceFolder}\\bin;C:\\another\\folder;D:/bin/ffmpeg/bin"
+  },
   "code-runner.respectShebang": true,
   "code-runner.executorMap": {
     "javascript": "node -r dotenv/config"
