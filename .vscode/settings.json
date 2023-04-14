@@ -8,5 +8,7 @@
   "code-runner.respectShebang": true,
   "code-runner.executorMap": {
     "javascript": "node -r dotenv/config"
-  }
+  },
+  "eslint.packageManager": "yarn",
+  "npm.packageManager": "yarn"
 }
