@@ -27,10 +27,10 @@ async function batch() {
     const list = config.list[i];
     let title, url;
     if (typeof list === "object") {
-      url = list.url;
+      url = list.url.trim();
       title = list.title;
     } else {
-      url = list;
+      url = list.trim();
     }
     await yt
       .downloadMp3(url, 320, function (progress, result) {
