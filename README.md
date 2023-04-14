@@ -56,4 +56,4 @@ For more information about using Node.js on Heroku, see these Dev Center article
 
 ## config batch
 
-fill url list at `batch-list.txt`
+fill url list at `batch-list.txt` (must same directory with `process.cwd()`) then import or run `src/YTDL-batch-file.js`
