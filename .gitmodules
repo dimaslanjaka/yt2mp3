@@ -1,0 +1,4 @@
+[submodule "packages/form-saver"]
+	path = packages/form-saver
+	url = https://github.com/dimaslanjaka/smartform.git
+	branch = compiler
