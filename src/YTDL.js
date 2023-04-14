@@ -1,18 +1,16 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const ytdl = require("ytdl-core");
-const path = require("path");
+const path = require("upath");
 const ffmpeg = require("fluent-ffmpeg");
 const readline = require("readline");
 const axios = require("axios");
 const process = require("process");
-const ROOT = process.cwd();
 const is = require("./is");
-const tmp = path.join(ROOT, "tmp");
 const moment = require("moment");
 const resolve = require("./resolve");
 const { dirname } = require("path");
 const { parseYTID } = require("./youtube-id-parser");
-const writefile = require("sbg-utility").writefile;
+const { writefile } = require("sbg-utility");
 const writeFile = function (dest, content) {
   if (Buffer.isBuffer(content)) {
     writefile(dest, content.toString());
@@ -20,6 +18,13 @@ const writeFile = function (dest, content) {
     writefile(dest, content);
   }
 };
+
+const ROOT = process.cwd();
+const tmp = path.join(ROOT, "tmp");
+const temps = ["mp3", "success", "process"].map((str) => path.join(tmp, str));
+temps
+  .filter((str) => !fs.existsSync(str))
+  .forEach((str) => fs.mkdirSync(str, { recursive: true }));
 
 if (typeof localStorage === "undefined" || localStorage === null) {
   var LocalStorage = require("node-localstorage").LocalStorage;
@@ -39,6 +44,13 @@ class YTDL {
    */
   API_KEY;
   API_URL = "https://www.googleapis.com/youtube/v3/search";
+  options = {
+    debug: false,
+  };
+
+  constructor(options) {
+    this.options = Object.assign(this.options, options);
+  }
 
   /**
    * Set API Key
@@ -122,58 +134,68 @@ class YTDL {
    * @param {function("progress"|"error"|"success", { path: number|string, info: ytdl.videoInfo })} callback
    */
   downloadMp3(VideoID, bitrate, callback) {
-    if (typeof callback != "function") {
-      callback = function () {};
-    }
-    if (typeof bitrate == "function") {
-      callback = bitrate;
-    }
-    if (VideoID.startsWith("http")) {
-      VideoID = parseYTID(VideoID);
-    }
-    const logsuccess = path.join(this.log.success, VideoID + ".json");
-    const logprocess = path.join(this.log.process, VideoID + ".json");
-    const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
-    resolve.dir(dirname(file_mp3));
-    resolve.file(file_mp3);
-    ytdl.getInfo(VideoID).then(function (info) {
-      let stream = ytdl(VideoID, {
-        quality: "highestaudio",
-        //filter: 'audioonly',
-      });
-      if (!bitrate || typeof bitrate != "number") {
-        bitrate = 128;
+    const self = this;
+    return new Promise((resolvePromise, rejectPromise) => {
+      if (typeof callback != "function") {
+        callback = function () {};
       }
-      //set log readline to 0
-      readline.cursorTo(process.stdout, 0);
-
-      ffmpeg(stream)
-        .audioBitrate(bitrate)
-        .on("progress", (p) => {
-          process.stdout.write(`${p.targetSize} kb downloaded\n`);
-          callback("progress", p.targetSize);
-          writeFile(logprocess, p);
-        })
-        .on("error", function (err) {
-          console.log(err);
-          callback("error", err);
-        })
-        .on("end", () => {
-          process.stdout.write("success saved to " + file_mp3 + "\n");
-          callback("success", {
-            path: file_mp3,
-            info,
+      if (typeof bitrate == "function") {
+        callback = bitrate;
+      }
+      if (VideoID.startsWith("http")) {
+        VideoID = parseYTID(VideoID);
+      }
+      const logsuccess = path.join(this.log.success, VideoID + ".json");
+      const logprocess = path.join(this.log.process, VideoID + ".json");
+      const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
+      resolve.dir(dirname(file_mp3));
+      resolve.file(file_mp3);
+      ytdl
+        .getInfo(VideoID)
+        .then(function (info) {
+          let stream = ytdl(VideoID, {
+            quality: "highestaudio",
+            //filter: 'audioonly',
           });
+          if (!bitrate || typeof bitrate != "number") {
+            bitrate = 128;
+          }
+          //set log readline to 0
+          readline.cursorTo(process.stdout, 0);
 
-          const log = readFile(logsuccess) || {};
-          log[file_mp3] = {
-            expire: moment(new Date()).add(5, "m").toDate(),
-            url: "/download?id=" + VideoID,
-          };
-          writeFile(logsuccess, log);
-          writeFile(logprocess, { status: "success" });
+          ffmpeg(stream)
+            .audioBitrate(bitrate)
+            .on("progress", (p) => {
+              if (self.options.debug)
+                process.stdout.write(`${p.targetSize} kb downloaded\n`);
+              callback("progress", p.targetSize);
+              writeFile(logprocess, p);
+            })
+            .on("error", function (err) {
+              callback("error", err);
+              rejectPromise(err);
+            })
+            .on("end", () => {
+              if (self.options.debug)
+                process.stdout.write("success saved to " + file_mp3 + "\n");
+              callback("success", {
+                path: file_mp3,
+                info,
+              });
+
+              const log = readFile(logsuccess) || {};
+              log[file_mp3] = {
+                expire: moment(new Date()).add(5, "m").toDate(),
+                url: "/download?id=" + VideoID,
+              };
+              writeFile(logsuccess, log);
+              writeFile(logprocess, { status: "success" });
+
+              resolvePromise({ path: file_mp3, info });
+            })
+            .save(file_mp3);
         })
-        .save(file_mp3);
+        .catch(rejectPromise);
     });
   }
 
