@@ -21,8 +21,10 @@ export interface batchConf {
   )[];
 }
 
-export default async function batch(config: batchConf) {
+let retry = 0;
+export default async function batch(config: batchConf, doretry?: boolean) {
   if (!config) throw new Error('config required');
+  if (doretry) retry++;
   const yt = new YTDL({ debug: false });
   yt.key(process.env.API_KEY);
 
@@ -65,5 +67,14 @@ export default async function batch(config: batchConf) {
         console.error('cannot download', url, title, e);
       });
   }
-  // writefile(batchConfig, config.list.join('\n'));
+
+  // skip when retry failure 3 times
+  if (retry > 3) {
+    // reset retry
+    retry = 0;
+    console.log('cannot retry more than 3 times');
+    return;
+  }
+  // retry when config.list still not emptied
+  if (config.list.length > 0) return batch(config);
 }
