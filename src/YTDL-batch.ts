@@ -52,6 +52,7 @@ export default async function batch(config: batchConf) {
           console.log('convert ytmp3 ' + progress, {
             originalTitle: result.info.videoDetails.title,
             title: title || result.info.videoDetails.title,
+            sanitizedTitle: sanitizefn(title || result.info.videoDetails.title),
             path: result.path
           });
           const index = config.list.indexOf(url);
