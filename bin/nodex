@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# make cygwin bin as priority
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH";
+
+(set -o igncr) 2>/dev/null && set -o igncr; # cygwin encoding fix
+
+basedir=`dirname "$0"`
+
+case `uname` in
+  *CYGWIN*) basedir=`cygpath -w "$basedir"`;;
+esac
+
+if [ -z "$1" ]; then
+    echo "You need to provide a js file path"
+    exit
+fi
+
+node -r dotenv/config "$@"
