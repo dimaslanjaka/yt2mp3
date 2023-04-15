@@ -7,11 +7,6 @@
     "outDir": "./tmp/build",
     "rootDir": "./"
   },
-  "include": [
-    "**/*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/node_modules"
-  ]
+  "include": ["**/*.js", "src/YTDL-batch.ts"],
+  "exclude": ["node_modules", "**/node_modules"]
 }

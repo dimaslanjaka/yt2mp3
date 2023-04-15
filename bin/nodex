@@ -16,4 +16,4 @@ if [ -z "$1" ]; then
     exit
 fi
 
-node -r dotenv/config "$@"
+node -r ts-node/register -r dotenv/config "$@"
