@@ -11,7 +11,9 @@
     "start": "node index.js",
     "dev:run": "nodemon index.js",
     "test": "node test.js",
-    "update": "curl -L https://github.com/dimaslanjaka/nodejs-package-types/raw/main/.gitattributes > .gitattributes && npx npm-check-updates -u"
+    "update": "curl -L https://github.com/dimaslanjaka/nodejs-package-types/raw/main/.gitattributes > .gitattributes && npx npm-check-updates -u",
+    "run-batch": "node -r ts-node/register -r dotenv/config src/YTDL-batch-file.js",
+    "run-config": "node -r ts-node/register -r dotenv/config src/YTDL-batch-config.js"
   },
   "repository": {
     "type": "git",
