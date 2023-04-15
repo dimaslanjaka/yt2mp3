@@ -1,16 +1,16 @@
-const fs = require("fs-extra");
-const ytdl = require("ytdl-core");
-const path = require("upath");
-const ffmpeg = require("fluent-ffmpeg");
-const readline = require("readline");
-const axios = require("axios");
-const process = require("process");
-const is = require("./is");
-const moment = require("moment");
-const resolve = require("./resolve");
-const { dirname } = require("path");
-const { parseYTID } = require("./youtube-id-parser");
-const { writefile } = require("sbg-utility");
+const fs = require('fs-extra');
+const ytdl = require('ytdl-core');
+const path = require('upath');
+const ffmpeg = require('fluent-ffmpeg');
+const readline = require('readline');
+const axios = require('axios');
+const process = require('process');
+const is = require('./is');
+const moment = require('moment');
+const resolve = require('./resolve');
+const { dirname } = require('path');
+const { parseYTID } = require('./youtube-id-parser');
+const { writefile, noop } = require('sbg-utility');
 const writeFile = function (dest, content) {
   if (Buffer.isBuffer(content)) {
     writefile(dest, content.toString());
@@ -20,16 +20,14 @@ const writeFile = function (dest, content) {
 };
 
 const ROOT = process.cwd();
-const tmp = path.join(ROOT, "tmp");
-const temps = ["mp3", "success", "process"].map((str) => path.join(tmp, str));
-temps
-  .filter((str) => !fs.existsSync(str))
-  .forEach((str) => fs.mkdirSync(str, { recursive: true }));
+const tmp = path.join(ROOT, 'tmp');
+const temps = ['mp3', 'success', 'process'].map((str) => path.join(tmp, str));
+temps.filter((str) => !fs.existsSync(str)).forEach((str) => fs.mkdirSync(str, { recursive: true }));
 
-if (typeof localStorage === "undefined" || localStorage === null) {
-  var LocalStorage = require("node-localstorage").LocalStorage;
+if (typeof localStorage === 'undefined' || localStorage === null) {
+  var LocalStorage = require('node-localstorage').LocalStorage;
   //localStorage = new LocalStorage('./scratch');
-  global.localStorage = new LocalStorage(ROOT + "/tmp");
+  global.localStorage = new LocalStorage(ROOT + '/tmp');
 }
 
 //const url = "https://youtu.be/cr9NEWOjuEg";
@@ -43,9 +41,9 @@ class YTDL {
    * @type {string}
    */
   API_KEY;
-  API_URL = "https://www.googleapis.com/youtube/v3/search";
+  API_URL = 'https://www.googleapis.com/youtube/v3/search';
   options = {
-    debug: false,
+    debug: false
   };
 
   constructor(options) {
@@ -76,7 +74,7 @@ class YTDL {
     /**
      * get blocked keys
      */
-    const blockedKeys = localStorage.getItem("blockedKeys");
+    const blockedKeys = localStorage.getItem('blockedKeys');
     let dump;
     if (blockedKeys) {
       dump = JSON.parse(blockedKeys);
@@ -90,7 +88,7 @@ class YTDL {
     }
     return {
       keys: lists,
-      dump: dump,
+      dump: dump
     };
   }
 
@@ -101,15 +99,12 @@ class YTDL {
   async start(url, bitrate, callback) {
     const VideoID = YouTubeGetID(url);
     let info = await ytdl.getInfo(VideoID);
-    let audioFormats = ytdl.filterFormats(info.formats, "audioonly");
+    let audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
     //console.log("Video length: " + info.length_seconds);
     //console.log("Formats with only audio: " + audioFormats.length);
-    resolve.dir(tmp + "/mp3");
-    resolve.dir(tmp + "/info");
-    writeFile(
-      path.join(tmp, "info", VideoID + ".json"),
-      JSON.stringify(info, null, 2)
-    );
+    resolve.dir(tmp + '/mp3');
+    resolve.dir(tmp + '/info');
+    writeFile(path.join(tmp, 'info', VideoID + '.json'), JSON.stringify(info, null, 2));
 
     if (audioFormats.length) {
       this.downloadMp3(VideoID, bitrate, callback);
@@ -120,11 +115,11 @@ class YTDL {
     /**
      * Folder process
      */
-    process: path.join(tmp, "process"),
+    process: path.join(tmp, 'process'),
     /**
      * Folder success
      */
-    success: path.join(tmp, "success"),
+    success: path.join(tmp, 'success')
   };
 
   /**
@@ -136,28 +131,28 @@ class YTDL {
   downloadMp3(VideoID, bitrate, callback) {
     const self = this;
     return new Promise((resolvePromise, rejectPromise) => {
-      if (typeof callback != "function") {
-        callback = function () {};
+      if (typeof callback != 'function') {
+        callback = noop;
       }
-      if (typeof bitrate == "function") {
+      if (typeof bitrate == 'function') {
         callback = bitrate;
       }
-      if (VideoID.startsWith("http")) {
+      if (VideoID.startsWith('http')) {
         VideoID = parseYTID(VideoID);
       }
-      const logsuccess = path.join(this.log.success, VideoID + ".json");
-      const logprocess = path.join(this.log.process, VideoID + ".json");
-      const file_mp3 = path.join(ROOT, "tmp/mp3", VideoID + ".mp3");
+      const logsuccess = path.join(this.log.success, VideoID + '.json');
+      const logprocess = path.join(this.log.process, VideoID + '.json');
+      const file_mp3 = path.join(ROOT, 'tmp/mp3', VideoID + '.mp3');
       resolve.dir(dirname(file_mp3));
       resolve.file(file_mp3);
       ytdl
         .getInfo(VideoID)
         .then(function (info) {
           let stream = ytdl(VideoID, {
-            quality: "highestaudio",
+            quality: 'highestaudio'
             //filter: 'audioonly',
           });
-          if (!bitrate || typeof bitrate != "number") {
+          if (!bitrate || typeof bitrate != 'number') {
             bitrate = 128;
           }
           //set log readline to 0
@@ -165,31 +160,29 @@ class YTDL {
 
           ffmpeg(stream)
             .audioBitrate(bitrate)
-            .on("progress", (p) => {
-              if (self.options.debug)
-                process.stdout.write(`${p.targetSize} kb downloaded\n`);
-              callback("progress", p.targetSize);
+            .on('progress', (p) => {
+              if (self.options.debug) process.stdout.write(`${p.targetSize} kb downloaded\n`);
+              callback('progress', p.targetSize);
               writeFile(logprocess, p);
             })
-            .on("error", function (err) {
-              callback("error", err);
+            .on('error', function (err) {
+              callback('error', err);
               rejectPromise(err);
             })
-            .on("end", () => {
-              if (self.options.debug)
-                process.stdout.write("success saved to " + file_mp3 + "\n");
-              callback("success", {
+            .on('end', () => {
+              if (self.options.debug) process.stdout.write('success saved to ' + file_mp3 + '\n');
+              callback('success', {
                 path: file_mp3,
-                info,
+                info
               });
 
               const log = readFile(logsuccess) || {};
               log[file_mp3] = {
-                expire: moment(new Date()).add(5, "m").toDate(),
-                url: "/download?id=" + VideoID,
+                expire: moment(new Date()).add(5, 'm').toDate(),
+                url: '/download?id=' + VideoID
               };
               writeFile(logsuccess, log);
-              writeFile(logprocess, { status: "success" });
+              writeFile(logprocess, { status: 'success' });
 
               resolvePromise({ path: file_mp3, info });
             })
@@ -215,20 +208,20 @@ class YTDL {
    */
   search(query, pageToken, callback) {
     //pageToken is callback not string
-    if (typeof pageToken == "function") {
+    if (typeof pageToken == 'function') {
       callback = pageToken;
     }
     const API_KEY = this.API_KEY;
     const API_URL = this.API_URL;
     const params = {
-      part: "snippet",
+      part: 'snippet',
       key: API_KEY,
       q: query,
-      type: "video",
+      type: 'video',
       maxResults: 10,
-      order: "viewCount",
+      order: 'viewCount'
     };
-    if (typeof pageToken == "string") {
+    if (typeof pageToken == 'string') {
       params.pageToken = pageToken;
     }
     //console.log(params);
@@ -240,33 +233,23 @@ class YTDL {
         if (callback) {
           callback(false, response.data.items, response);
           writeFile(
-            path.join(
-              ROOT,
-              "tmp/info/search/",
-              query + (token ? "-" + token : "") + ".json".trim()
-            ),
+            path.join(ROOT, 'tmp/info/search/', query + (token ? '-' + token : '') + '.json'.trim()),
             response.data
           );
         }
       })
       .catch(function (error) {
         //console.error(error);
-        if (error.hasOwnProperty("data")) {
+        if (error.hasOwnProperty('data')) {
           const msg = error.data.error.message;
           const code = error.data.error.code;
           //console.log(`error (${code}) ${msg} API: ${this.API_KEY}`);
           blockedKeys[API_KEY] = code;
           if (code == 403) {
-            console.error("blocking " + API_KEY);
-            localStorage.setItem("blockedKeys", JSON.stringify(blockedKeys));
+            console.error('blocking ' + API_KEY);
+            localStorage.setItem('blockedKeys', JSON.stringify(blockedKeys));
           }
-          callback(
-            new Error(
-              "Error Code: " + code + ", Message: " + msg + ", API: " + API_KEY
-            ),
-            code,
-            msg
-          );
+          callback(new Error('Error Code: ' + code + ', Message: ' + msg + ', API: ' + API_KEY), code, msg);
         }
       });
   }
@@ -277,10 +260,8 @@ class YTDL {
  * @param {string} url
  */
 function YouTubeGetID(url) {
-  var ID = "";
-  url = url
-    .replace(/(>|<)/gi, "")
-    .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+  var ID = '';
+  url = url.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
   if (url[2] !== undefined) {
     ID = url[2].split(/[^0-9a-z_\-]/i);
     ID = ID[0];
@@ -322,5 +303,5 @@ module.exports = {
   path: path,
   getYtID: YouTubeGetID,
   root: ROOT,
-  is: is,
+  is: is
 };
