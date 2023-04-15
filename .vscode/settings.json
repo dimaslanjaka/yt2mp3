@@ -10,5 +10,7 @@
     "javascript": "node -r ts-node/register -r dotenv/config"
   },
   "eslint.packageManager": "yarn",
-  "npm.packageManager": "yarn"
+  "npm.packageManager": "yarn",
+  "editor.codeActionsOnSave": { "source.fixAll": true, "source.organizeImports": true },
+  "editor.formatOnSave": false
 }
