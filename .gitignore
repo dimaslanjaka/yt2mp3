@@ -10,4 +10,7 @@ host.lnk
 .yarn/*.gz
 .yarn/version*
 
+## private environment configuration
 .env
+## production files
+dist
