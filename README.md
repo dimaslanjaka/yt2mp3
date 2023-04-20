@@ -1,5 +1,5 @@
 ## yt2mp3 NodeJS project
-- Youtube to mp3 engine : [ytdl-core](https://github.com/fent/node-ytdl-core#readme)
+- Youtube to mp3 engine : [ytdl-core](https://github.com/fent/node-ytdl-core)
 - Dynamic routing : [EJS](https://ejs.co/)
 - [FFMPEG](https://www.npmjs.com/package/ffmpeg)
 - [FFMPEG installation](http://www.ffmpeg.org/download.html)
@@ -15,4 +15,4 @@ API_KEY=YOUR_API_KEY
 
 ## config batch
 
-fill url list at `batch-list.txt` (must same directory with `process.cwd()`) then import or run `src/YTDL-batch-file.js`
+fill url list at `batch-list.txt` (must same directory with `process.cwd()`) then import or run `ts-node -r dotenv/config src/YTDL-batch-file.ts`
