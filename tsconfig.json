@@ -5,7 +5,7 @@
     "sourceMap": true,
     "allowJs": true,
     "checkJs": false,
-    "outDir": "./tmp/build",
+    "outDir": "./dist",
     "rootDir": "./"
   },
   "include": ["**/*.js", "src/YTDL-batch.ts"],
