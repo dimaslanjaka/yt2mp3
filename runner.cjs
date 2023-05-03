@@ -1,25 +1,33 @@
 const cp = require('cross-spawn');
+const minimist = require('minimist');
 const { join } = require('path');
 
-const lists = [
-  'https://open.spotify.com/track/6dEscZ97JfOeYK4EVaPSpr?si=77e2b9fff35147a1',
-];
+// download musics to drive F
+// node runner.cjs -o F: https://open.spotify.com/album/0wEsu54toSevjn1NIpqytB
 
-lists.forEach(list => {
-  cp.sync(
-    'node',
-    [
-      '../cli.js',
-      '--cookie-file',
-      'cookie.txt',
-      '--cache-file',
-      'cache.txt',
-      list,
-    ],
-    {
-      cwd: join(__dirname, 'tmp'),
-      stdio: 'inherit',
-      shell: true,
-    },
-  );
-});
+const args = minimist(process.argv.slice(2));
+
+(function main() {
+  const lists = args._;
+  const saveDir = args['o'] || args['output'];
+  if (!saveDir) return console.log('save directory not defined');
+
+  lists.forEach(list => {
+    cp.async(
+      'node',
+      [
+        join(__dirname, 'cli.js'),
+        '--cookie-file',
+        'cookie.txt',
+        '--cache-file',
+        'cache.txt',
+        list,
+      ],
+      {
+        cwd: saveDir,
+        stdio: 'inherit',
+        shell: true,
+      },
+    );
+  });
+})();
