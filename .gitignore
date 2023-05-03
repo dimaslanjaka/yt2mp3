@@ -1,6 +1,13 @@
-node_modules/
 ./**/*.mp3
 .vscode/
 Makefile
 .DS_STORE
 tmp/
+**/node_modules/
+**/.yarn/cache
+**/.yarn/versions
+**/.yarn/unplug*
+**/.yarn/*.gz
+**/tmp/
+*.log
+.env
