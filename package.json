@@ -38,6 +38,7 @@
     "node-localstorage": "^2.2.1",
     "sanitize-filename": "^1.6.3",
     "sbg-utility": "^1.0.9",
+    "spotify-dl": "https://github.com/dimaslanjaka/yt2mp3.git#spotify",
     "upath": "^2.0.1",
     "ytdl-core": "^4.11.4"
   },
