@@ -33,6 +33,7 @@ const args = minimist(process.argv.slice(2));
           'cookie.txt',
           '--cache-file',
           'cache.txt',
+          '--download-report',
           list,
         ],
         {
