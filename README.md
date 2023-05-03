@@ -17,8 +17,8 @@ API_KEY=YOUR_API_KEY
 
 fill url list at `batch-list.txt` (must same directory with `process.cwd()`) then import or run `ts-node -r dotenv/config src/YTDL-batch-file.ts`
 
-## FFMPEG
-tested and working with below version:
+## Test
+tested and working `FFMPEG` with below version:
 ```log
 ffmpeg version git-2019-11-26-59d264b Copyright (c) 2000-2019 the FFmpeg developers
 built with gcc 9.2.1 (GCC) 20191125
