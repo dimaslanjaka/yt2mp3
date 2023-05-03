@@ -33,8 +33,6 @@ const args = minimist(process.argv.slice(2));
           '--cache-file',
           'cache.txt',
           '--download-report',
-          '--search-format',
-          'albumName',
           list,
         ],
         {
