@@ -9,8 +9,7 @@ const { join } = require('path');
 const args = minimist(process.argv.slice(2));
 
 (async function main() {
-  const saveDir = args['o'] || args['output'];
-  if (!saveDir) return console.log('save directory not defined');
+  const saveDir = args['o'] || args['output'] || process.cwd();
 
   const lists = args._;
   // get batch.txt lines
@@ -34,6 +33,8 @@ const args = minimist(process.argv.slice(2));
           '--cache-file',
           'cache.txt',
           '--download-report',
+          '--search-format',
+          'albumName',
           list,
         ],
         {
