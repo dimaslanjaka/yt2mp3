@@ -11,3 +11,5 @@ tmp/
 **/tmp/
 *.log
 .env
+cache.txt
+cookie.txt
