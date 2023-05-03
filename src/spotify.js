@@ -1,4 +1,5 @@
 // https://github.com/spotDL/spotify-downloader - spotdl
+// https://spotdl.readthedocs.io/en/latest/usage/ - spotdl docs
 // https://github.com/SwapnilSoni1999/spotify-dl - spotifydl
 
 const cp = require('cross-spawn');
