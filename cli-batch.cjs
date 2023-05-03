@@ -15,13 +15,12 @@ const args = minimist(process.argv.slice(2));
   const lists = args._;
   // get batch.txt lines
   const batchtxt = join(process.cwd(), 'batch.txt');
-  if (existsSync(batchtxt)) {
-    const batch = readFileSync(batchtxt, 'utf-8')
-      .split(/\r?\n/)
-      .map(str => str.trim())
-      .filter(str => str.length > 0);
-    lists.push(...batch);
+  const useBatch = existsSync(batchtxt);
+  if (useBatch) {
+    lists.push(...splitLines(batchtxt));
   }
+
+  const done = [];
 
   for (let i = 0; i < lists.length; i++) {
     const list = lists[i];
@@ -44,8 +43,30 @@ const args = minimist(process.argv.slice(2));
       )
       .then(() => {
         // remove from batch.txt
-        lists.splice(lists.indexOf(list), 1);
-        writeFileSync(batchtxt, lists.join('\n'));
+        // lists.splice(lists.indexOf(list), 1);
+
+        // filter new value
+        done.push(list);
+        if (useBatch) {
+          const unfinished = lists
+            .concat(...splitLines(batchtxt))
+            .filter(function (el) {
+              return !done.includes(el);
+            });
+          writeFileSync(batchtxt, unfinished.join('\n'));
+        }
       });
   }
 })();
+
+/**
+ * read file and split newlines
+ * @param {string} file
+ * @returns {string[]}
+ */
+function splitLines(file) {
+  return readFileSync(file, 'utf-8')
+    .split(/\r?\n/)
+    .map(str => str.trim())
+    .filter(str => str.length > 0);
+}

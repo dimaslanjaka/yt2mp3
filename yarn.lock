@@ -5425,7 +5425,7 @@ __metadata:
     yt-search: ^2.10.3
     ytdl-core: ^4.11.3
   bin:
-    spotifybatch: runner.cjs
+    spotifybatch: cli-batch.cjs
     spotifydl: cli.js
   languageName: unknown
   linkType: soft

@@ -5,7 +5,7 @@
   "description": "Spotify Songs, Playlist & Album Downloader",
   "main": "app.js",
   "bin": {
-    "spotifybatch": "runner.cjs",
+    "spotifybatch": "cli-batch.cjs",
     "spotifydl": "cli.js"
   },
   "scripts": {
