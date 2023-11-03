@@ -19,7 +19,7 @@ fill url list at `batch-youtube.txt` (must same directory with `process.cwd()`) 
 
 ## sample files
 - downloader https://github.com/dimaslanjaka/yt2mp3/blob/master/src/YTDL-downloader.js
-- search query https://github.com/dimaslanjaka/yt2mp3/blob/56d0740fa2ed4d51c03a98d9502cdd6a9e900268/src/YTDL.js#L209
+- search query https://github.com/dimaslanjaka/yt2mp3/blob/56d0740fa2ed4d51c03a98d9502cdd6a9e900268/src/YTDL.js#L209-L256
 
 ## Test
 tested and working `FFMPEG` with below version:
