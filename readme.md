@@ -17,6 +17,10 @@ API_KEY=YOUR_API_KEY
 
 fill url list at `batch-youtube.txt` (must same directory with `process.cwd()`) then import or run `ts-node -r dotenv/config src/YTDL-batch-file.ts`
 
+## sample files
+- downloader https://github.com/dimaslanjaka/yt2mp3/blob/master/src/YTDL-downloader.js
+- search query https://github.com/dimaslanjaka/yt2mp3/blob/56d0740fa2ed4d51c03a98d9502cdd6a9e900268/src/YTDL.js#L209
+
 ## Test
 tested and working `FFMPEG` with below version:
 ```log
