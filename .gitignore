@@ -9,8 +9,10 @@ host.lnk
 .yarn/cache
 .yarn/*.gz
 .yarn/version*
+**/package-lock.json
 
 ## private environment configuration
 .env
 ## production files
 dist
+
