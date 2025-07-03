@@ -1,12 +1,12 @@
-const YTDL = require("./YTDL");
+const YTDL = require('./YTDL');
 
 /**
  * API KEY List
  */
 let apis = [
-  "AIzaSyDm21ZMgT6KQpjo3T0BFVH3DjhykYU5bXM",
-  "AIzaSyDjF63RkbOTm-n3gJ-a-hBwXt7EFW851vA",
-  "AIzaSyDlna9xQsXvsCK5oUKAsYozuk5YHczAyS0",
+  'AIzaSyDm21ZMgT6KQpjo3T0BFVH3DjhykYU5bXM',
+  'AIzaSyDjF63RkbOTm-n3gJ-a-hBwXt7EFW851vA',
+  'AIzaSyDlna9xQsXvsCK5oUKAsYozuk5YHczAyS0'
 ];
 
 const yt = new YTDL.YTDL();
